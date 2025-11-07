@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class OrderController extends Controller
 {
@@ -31,11 +32,11 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['items.product', 'items.variant', 'user']);
+        $order->load(['items.product.primaryImage', 'items.variant', 'user']);
         return view('admin.orders.show', compact('order'));
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, Order $order): RedirectResponse
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,completed,cancelled'
