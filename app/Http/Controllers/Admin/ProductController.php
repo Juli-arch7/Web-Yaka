@@ -8,6 +8,7 @@ use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -79,6 +80,11 @@ class ProductController extends Controller
             'images.*' => 'nullable|image|max:2048'
         ]);
 
+        // Update slug jika nama berubah
+        if ($product->name !== $validated['name']) {
+            $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
+        }
+
         $product->update($validated);
 
         // Upload new images
@@ -99,15 +105,46 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        // Delete images
-        foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->image_path);
+        try {
+            DB::beginTransaction();
+
+            // Check if product has orders
+            $hasOrders = \App\Models\OrderItem::where('product_id', $product->id)->exists();
+            
+            if ($hasOrders) {
+                return redirect()->back()
+                    ->with('error', 'Produk tidak dapat dihapus karena sudah ada dalam pesanan. Anda bisa mengubah stok menjadi 0 untuk menonaktifkan produk.');
+            }
+
+            // Delete images from storage
+            foreach ($product->images as $image) {
+                Storage::disk('public')->delete($image->image_path);
+                $image->delete();
+            }
+
+            // Delete variants
+            $product->variants()->delete();
+
+            // Delete reviews
+            $product->reviews()->delete();
+
+            // Delete from cart
+            \App\Models\Cart::where('product_id', $product->id)->delete();
+
+            // Finally delete the product
+            $product->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Produk berhasil dihapus');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
         }
-
-        $product->delete();
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Produk berhasil dihapus');
     }
 
     public function variants(Product $product)
@@ -144,8 +181,26 @@ class ProductController extends Controller
 
     public function destroyVariant(ProductVariant $variant)
     {
-        $variant->delete();
-        return redirect()->back()->with('success', 'Varian berhasil dihapus');
+        try {
+            // Check if variant used in orders
+            $hasOrders = \App\Models\OrderItem::where('product_variant_id', $variant->id)->exists();
+            
+            if ($hasOrders) {
+                return redirect()->back()
+                    ->with('error', 'Varian tidak dapat dihapus karena sudah ada dalam pesanan.');
+            }
+
+            // Delete from cart
+            \App\Models\Cart::where('product_variant_id', $variant->id)->delete();
+
+            $variant->delete();
+            
+            return redirect()->back()->with('success', 'Varian berhasil dihapus');
+            
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus varian: ' . $e->getMessage());
+        }
     }
 
     public function deleteImage(ProductImage $image)
@@ -155,5 +210,4 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Gambar berhasil dihapus');
     }
-
 }
