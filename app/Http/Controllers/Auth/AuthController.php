@@ -45,7 +45,8 @@ class AuthController extends Controller
         $validated = $request->validate([
             'username' => 'required|unique:users',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed'
+            'password' => 'required|min:6|confirmed',
+            'g-recaptcha-response' => new \App\Rules\Captcha(),
         ]);
 
         $user = User::create([

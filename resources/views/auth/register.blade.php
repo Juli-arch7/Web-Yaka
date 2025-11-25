@@ -57,6 +57,17 @@
                        required>
             </div>
 
+            <div class="form-group row">
+                <div class="col-md-6 offset-md-4">
+                    <div class="g-recaptcha" data-sitekey="{{env('CAPTCHA_KEY')}}"></div>
+                    @if($errors->has('g-recaptcha-response'))
+                    <span class="invalid-feedback" style="display:block">
+                        <strong>{{$errors->first('g-recaptcha-response')}}</strong>
+                    </span>
+                    @endif
+                </div>
+            </div>
+
             <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
                 Daftar
             </button>

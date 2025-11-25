@@ -1,13 +1,223 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Web Yaka - E-Commerce Platform
 
-## About Laravel
+Web Yaka adalah platform e-commerce yang dibangun dengan Laravel 12 dan dilengkapi dengan integrasi payment gateway **Midtrans**.
+
+## Fitur Utama
+
+- 🛒 Manajemen produk dan kategori
+- 🛍️ Sistem keranjang belanja
+- 📦 Sistem order dan tracking
+- 💳 Payment integration dengan Midtrans
+- 👤 User authentication dan profile management
+- ⭐ Review dan rating produk
+- 👨‍💼 Admin dashboard
+- 📱 Responsive design
+
+## Integrasi Midtrans
+
+Aplikasi ini sudah dilengkapi dengan integrasi payment gateway **Midtrans**. 
+
+### Setup Cepat
+
+1. **Install Dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+2. **Setup Environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+3. **Database Setup**
+   ```bash
+   php artisan migrate
+   php artisan seed
+   ```
+
+4. **Configure Midtrans** di `.env`:
+   ```
+   MIDTRANS_SERVER_KEY=your_server_key
+   MIDTRANS_CLIENT_KEY=your_client_key
+   MIDTRANS_IS_PRODUCTION=false
+   ```
+
+5. **Jalankan Server**
+   ```bash
+   php artisan serve
+   npm run dev
+   ```
+
+### Dokumentasi Midtrans
+
+- 📖 [Setup & Configuration](./MIDTRANS_SETUP.md)
+- 🧪 [Testing Guide](./TESTING_PAYMENT.md)
+- 📋 [API Documentation](./API_DOCUMENTATION.md)
+- 💻 [View Snippet](./PAYMENT_VIEW_SNIPPET.md)
+
+### Fitur Payment
+
+✅ Create payment snap token
+✅ Handle payment callbacks
+✅ Process webhook notifications
+✅ Update order status automatically
+✅ Support multiple payment methods
+✅ Fraud detection
+✅ Transaction logging
+
+## File Structure
+
+```
+app/
+├── Services/
+│   └── MidtransService.php          # Service untuk Midtrans API
+├── Models/
+│   ├── Payment.php                   # Model payment
+│   ├── Order.php                     # Model order
+│   └── ...
+├── Http/
+│   ├── Controllers/
+│   │   ├── PaymentController.php      # Payment handling
+│   │   └── ...
+│   └── Middleware/
+└── Providers/
+    └── AppServiceProvider.php        # Service registration
+
+config/
+└── midtrans.php                      # Midtrans configuration
+
+database/
+├── migrations/
+│   └── create_payments_table.php      # Payment table migration
+└── seeders/
+
+resources/
+├── views/
+│   ├── orders/
+│   │   └── payment.blade.php         # Payment view
+│   └── ...
+
+routes/
+└── web.php                           # Routes (includes payment routes)
+```
+
+## Technology Stack
+
+- **Framework**: Laravel 12
+- **Database**: MySQL
+- **Frontend**: Tailwind CSS, Alpine.js
+- **Payment**: Midtrans Snap API
+- **Build**: Vite
+
+## Development
+
+### Running Tests
+```bash
+php artisan test
+```
+
+### Database Migrations
+```bash
+php artisan migrate
+php artisan migrate:rollback
+php artisan migrate:refresh
+```
+
+### Clearing Cache
+```bash
+php artisan cache:clear
+php artisan config:clear
+```
+
+## API Endpoints
+
+### Payment Endpoints
+- `POST /payment/create/{order}` - Create payment snap
+- `GET /payment/status/{order}` - Check payment status
+- `POST /midtrans/notification` - Webhook handler
+
+Lihat [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) untuk detail lengkap.
+
+## Requirements
+
+- PHP >= 8.2
+- Composer
+- Node.js & npm
+- MySQL 5.7+
+- Midtrans account (https://midtrans.com)
+
+## Installation
+
+1. Clone repository
+   ```bash
+   git clone https://github.com/Juli-arch7/Web-Yaka.git
+   cd Web-Yaka
+   ```
+
+2. Install composer dependencies
+   ```bash
+   composer install
+   ```
+
+3. Install npm dependencies
+   ```bash
+   npm install
+   ```
+
+4. Copy environment file
+   ```bash
+   cp .env.example .env
+   ```
+
+5. Generate application key
+   ```bash
+   php artisan key:generate
+   ```
+
+6. Configure database di `.env`
+
+7. Run migrations
+   ```bash
+   php artisan migrate
+   ```
+
+8. Build assets
+   ```bash
+   npm run build
+   ```
+
+9. Start development server
+   ```bash
+   php artisan serve
+   ```
+
+Aplikasi akan berjalan di `http://localhost:8000`
+
+## Troubleshooting
+
+Lihat bagian Troubleshooting di [MIDTRANS_SETUP.md](./MIDTRANS_SETUP.md).
+
+## Contributing
+
+Silakan buat pull request atau laporkan issues.
+
+## License
+
+MIT License - lihat LICENSE file.
+
+## Support
+
+- 📧 Email: support@webyaka.com
+- 💬 Telegram: @webyaka
+- 🌐 Website: https://webyaka.com
+
+---
+
+**Dibuat dengan ❤️ untuk memudahkan penjualan online di Indonesia**
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 

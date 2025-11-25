@@ -122,6 +122,126 @@
             </div>
         </div>
 
+        @if ($order->status === 'pending')
+            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                <p class="font-bold">Pembayaran Belum Diterima</p>
+                <p>Silakan lakukan pembayaran untuk mengkonfirmasi pesanan Anda.</p>
+            </div>
+
+            <button 
+                type="button"
+                id="pay-button"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+                Bayar Sekarang
+            </button>
+        @elseif ($order->status === 'paid')
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <p class="font-bold">Pembayaran Berhasil</p>
+                <p>Pesanan Anda telah dikonfirmasi. Terima kasih!</p>
+            </div>
+        @endif
+
+        @push('scripts')
+            @if ($order->status === 'pending')
+                <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+                <script>
+                    console.log('[Payment] Script loaded');
+                    console.log('[Payment] Order ID:', {{ $order->id }});
+                    console.log('[Payment] Client Key set:', !!('{{ config('midtrans.client_key') }}'));
+                    
+                    // Find button immediately
+                    const payButton = document.getElementById('pay-button');
+                    console.log('[Payment] Button found:', !!payButton);
+                    
+                    if (payButton) {
+                        // Click handler
+                        payButton.onclick = function() {
+                            console.log('[Payment] ▶ BUTTON CLICKED');
+                            
+                            payButton.disabled = true;
+                            payButton.textContent = 'Memproses...';
+                            
+                            const url = '{{ route("payment.create", $order->id) }}';
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                            
+                            console.log('[Payment] Fetching:', url);
+                            console.log('[Payment] CSRF Token present:', !!csrfToken);
+                            
+                            fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(response => {
+                                console.log('[Payment] Status:', response.status);
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('[Payment] Response:', data);
+                                
+                                if (data.success && data.snap_token) {
+                                    console.log('[Payment] ▶ SNAP AVAILABLE:', typeof snap);
+                                    
+                                    // Double check snap exists
+                                    if (typeof window.snap === 'undefined') {
+                                        console.error('[Payment] ✗ window.snap is undefined!');
+                                        alert('Error: Snap SDK tidak ter-load');
+                                        payButton.disabled = false;
+                                        payButton.textContent = 'Bayar Sekarang';
+                                        return;
+                                    }
+                                    
+                                    console.log('[Payment] ▶ OPENING SNAP...');
+                                    
+                                    window.snap.pay(data.snap_token, {
+                                        onSuccess: function(result) {
+                                            console.log('[Payment] ✓ SUCCESS');
+                                            alert('Pembayaran berhasil!');
+                                            location.reload();
+                                        },
+                                        onPending: function(result) {
+                                            console.log('[Payment] ⏳ PENDING');
+                                            alert('Pembayaran sedang diproses');
+                                            location.reload();
+                                        },
+                                        onError: function(result) {
+                                            console.log('[Payment] ✗ ERROR:', result);
+                                            alert('Pembayaran gagal');
+                                            payButton.disabled = false;
+                                            payButton.textContent = 'Bayar Sekarang';
+                                        },
+                                        onClose: function() {
+                                            console.log('[Payment] CLOSED');
+                                            payButton.disabled = false;
+                                            payButton.textContent = 'Bayar Sekarang';
+                                        }
+                                    });
+                                } else {
+                                    console.error('[Payment] ✗ No snap token:', data);
+                                    alert('Error: ' + (data.message || 'Gagal mendapatkan token'));
+                                    payButton.disabled = false;
+                                    payButton.textContent = 'Bayar Sekarang';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('[Payment] ✗ FETCH ERROR:', error);
+                                alert('Error: ' + error.message);
+                                payButton.disabled = false;
+                                payButton.textContent = 'Bayar Sekarang';
+                            });
+                        };
+                        
+                        console.log('[Payment] ✓ Click handler attached');
+                    }
+                </script>
+            @endif
+        @endpush
+
+
         <!-- Actions -->
         <div class="flex justify-between items-center mt-8 pt-6 border-t">
             <a href="{{ route('orders.index') }}" class="text-blue-600 hover:text-blue-700">

@@ -9,6 +9,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
@@ -46,6 +47,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
+    // Payment
+    Route::post('/payment/create/{order}', [PaymentController::class, 'createPayment'])->name('payment.create');
+    Route::get('/payment/status/{order}', [PaymentController::class, 'status'])->name('payment.status');
+    Route::post('/payment/finish', [PaymentController::class, 'finish'])->name('payment.finish');
+    Route::post('/payment/error', [PaymentController::class, 'error'])->name('payment.error');
+    Route::post('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
+
     // Reviews
     Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
@@ -80,3 +88,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('settings', [StoreSettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [StoreSettingController::class, 'update'])->name('settings.update');
 });
+
+// Midtrans Webhook (Public route)
+Route::post('/midtrans/notification', [PaymentController::class, 'notification'])->name('midtrans.notification');

@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['admin' => \App\Http\Middleware\AdminMiddleware::class]);
+        
+        // Exclude CSRF check untuk Midtrans webhook
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/notification',
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (): void {
         //
     })->create();
